@@ -1,9 +1,44 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useRef, useState } from "react";
 import { NeonH6 } from "react-neon-components";
-import { Link } from "react-router-dom";
+import { Link, Navigate, Route, useNavigate } from "react-router-dom";
 import ReactiveButton from "reactive-button";
 
 export default function Login() {
+  const error = ["invalid"];
+  const [errors, setErrors] = useState([]);
+  const [datajson, setDatajson] = useState([]);
+  const [token, setToken] = useState(false);
+  const [username, setUsername] = useState(null);
+  const [password, setPassword] = useState(null);
+  const navigate = useNavigate();
+  const data = {
+    identifier: username,
+    password: password,
+  };
+  const handleUser = (e) => {
+    e.preventDefault();
+    setUsername(e.target.value);
+    console.log(username);
+  };
+  const handlePass = (e) => {
+    e.preventDefault();
+    setPassword(e.target.value);
+    console.log(password);
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios
+      .post("http://localhost:1337/api/auth/local", data)
+      .then((response) => {
+        setErrors([]);
+        console.log(response.data);
+        navigate("/game");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
   return (
     <div
       style={{
@@ -16,11 +51,24 @@ export default function Login() {
         alignItems: "center",
       }}
     >
-      <form action="" style={{ display: "flex", flexDirection: "column" }}>
+      <form
+        action=""
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column" }}
+      >
+        {errors.length > 0 && (
+          <ul>
+            {errors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        )}
+
         <NeonH6 color="#8A2BE2" effect="flicker" fontSize="15px">
           Username
         </NeonH6>
         <input
+          onChange={handleUser}
           name="username"
           type="text"
           style={{
@@ -34,9 +82,11 @@ export default function Login() {
         <NeonH6 color="#8A2BE2" effect="flicker" fontSize="15px">
           Password
         </NeonH6>
+
         <input
           name="password"
           type="text"
+          onChange={handlePass}
           style={{
             padding: "10px",
             width: "250px",
